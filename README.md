@@ -1,0 +1,4 @@
+sokobanSolver
+=============
+
+A* application
