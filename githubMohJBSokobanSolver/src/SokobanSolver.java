@@ -184,6 +184,12 @@ DirNode findE(int e)
  DirNode n=this;
  while(n.n!=null&&e>n.estimated)n=n.n;
  return n;}
+/**find estimate node*/
+DirNode findE(int e,DirNode t)
+{if(n==null||e<estimated)return this;
+ DirNode n=this;
+ while(n.n!=null&&e>n.estimated && t.p!=null && )n=n.n;//TODO: incomplete implementation
+ return n;}
 
 }//class DirNode
 
@@ -351,8 +357,8 @@ void pLoc(int pr,int pc,int nr,int nc)
 
 class PathFinder extends State
 {PathFinder(State p){super(p);}
-	int tr,tc;
-	DirNode q,m,x,start,grid[][];//,target
+	//int tr,tc;
+	DirNode q,m,start,target,grid[][];
 
  void pathClear()
  {if(grid==null||grid.length!=state.a.length)grid=new DirNode[state.a.length][];
@@ -367,67 +373,85 @@ class PathFinder extends State
 
 // void push(Direction p){d=new DirNode(p,d,0);}
 
- void findPath(State p,int currentRow,int currentCol,int targetRow,int targetCol)
- {if(currentCol==targetCol && currentRow==targetRow){d=start=null;return;}
-	int dx=targetCol-currentCol,dy=targetRow-currentRow;
-	if((Math.abs(dx)==1 && dy==0) || (Math.abs(dy)==1 && dx==0))
-	{if(d==null)d=new DirNode(currentRow,currentCol);
-		else{d.loc(currentRow,currentCol);d.n=null;}
-		d.d=Direction.dir(currentCol, currentRow, targetCol, targetRow);
-		start=d;return;
+ void findPath(State p,int startRow,int startCol,int targetRow,int targetCol)
+ {findPath(startRow,startCol,targetRow,targetCol);}
+
+ void findPath(int startRow,int startCol,int targetRow,int targetCol)
+ {	if(startCol==targetCol && startRow==targetRow)return;
+	Cell c=getCell(targetRow,targetCol);
+	if(c==null || !c.free)return;
+
+	d=start;
+	if(d==null)d=new DirNode(startRow,startCol);
+	else{d.loc(startRow,startCol);d.n=d.p=null;}
+	d.d=Direction.dir(startCol, startRow, targetCol, targetRow);
+	q=start=d;
+
+	d=target;
+	if(d==null)d=new DirNode(targetRow,targetCol);
+	else{d.loc(targetRow,targetCol);d.n=d.p=null;}
+	target=d;
+
+	findPath();
+	d=target;
+	while(d!=null && d!=start )
+	{	m=d.p;
+		for(Direction dir:Direction.values())
+		{
+			
+		}
 	}
-	pathClear();//int target=targetCol+targetRow*cols,xl=currentCol+currentRow*cols;
-	if(d==null)d=new DirNode(currentRow,currentCol);
-	else{d.loc(currentRow,currentCol);d.n=null;}
-	grid[d.r][d.c]=q=start=d;
-	tr=targetRow;tc=targetCol;
+ }
+ 
+ void findPath()
+ {	int x=target.c-start.c,y=target.r-start.r;
+	q=start;q.p=q.n=null;
+	DirNode qTail=start;
+	if((Math.abs(x)==1 && y==0) || (Math.abs(y)==1 && x==0))
+		return;
+
+	pathClear();
+	grid[target.r][target.c]=target;
+	grid[start.r][start.c]=d=start;
+
 	replace(Cell.D,Cell.d,Cell.X  ,Cell.G,Cell._  ,Cell.o,Cell.O);
 	while(q!=null)
 	{m=q;q=q.dequeue();
-		for(Direction i:Direction.values())
-		{	Cell c=getCell(currentRow=m.r+i.dy,currentCol=m.c+i.dx);
+		for(Direction dir:Direction.values())
+		{	Cell c=getCell(y=m.r+dir.dy,x=m.c+dir.dx);
 			if(c!=null&&c.free)
-			{	if(currentCol==targetCol 
-				&& currentRow==targetRow)
-				{	d.d=i;
+			{	if(x==target.c 
+				&& y==target.r)
+				{	m.d=dir;
+					m.n=target;
+					target.p=m;
 					return;
 				}
-
-			/* DirNode nod(int r,int c)
-			 {	DirNode p=
-				(grid   !=null&&r>=0&&r<grid   .length && 
-				 grid[r]!=null&&c>=0&&c<grid[r].length)
-				?grid[r][c]:null;
-				return p;}
-				x=nod(currentRow,currentCol);*/
-				if(currentRow>=0&& currentRow<grid.length 
-					&&grid[currentRow]!=null
-					&&currentCol>=0&& 
-					currentCol<grid[currentRow].length &&
-					grid[currentRow][currentCol]==null)
-					{	x=new DirNode(d
-							,currentRow
-							,currentCol);
-						x.pathLength
-							=Math.abs(start.r-x.r)
-							+Math.abs(start.c-x.c);
-						x.estimated=x.pathLength
-							+Math.abs(targetRow-x.r)
-							+Math.abs(targetCol-x.c);
-						if(q==null)q=x;else 
-						if(x.estimated<q.estimated)
-						{x.link(q);q=x;}
-						else q.findE(
-							x.estimated).link(x);
-						grid[x.r][x.c]=d=x;
-					}
-				
+				if(	y>=0
+					&& y<grid.length 
+					&&grid[y]!=null
+					&&x>=0&& 
+					x<grid[y].length &&
+					grid[y][x]==null)
+				{	d=new DirNode(m,y,x);
+					d.pathLength
+						=Math.abs(start.r-d.r)
+						+Math.abs(start.c-d.c);
+					d.estimated=d.pathLength
+						+Math.abs(target.r-d.r)
+						+Math.abs(target.c-d.c);
+					if(q==null)q=qTail=d;else 
+					if(d.estimated<q.estimated)
+					{d.link(q);q=d;}else 
+					if(d.estimated>=qTail.estimated)
+						qTail=qTail.link(d);
+					else
+						q.findE(d.estimated).link(d);
+					grid[d.r][d.c]=d;
+				}
 			}
 		}
 	}
-
- //find short-cuts in un-optimized mousePath.
- // checkMousePathShortCuts();
  }//findPath
 
 void replace(Cell o,Cell v)
@@ -445,132 +469,6 @@ void replace(
 	if(v==o1||v==o12)a[r][c]=v1;
 	else if(v==o2)a[r][c]=v2;
 	else if(v==o3)a[r][c]=v3;}}
-
-boolean recurs(int r,int c)
-{	if(r==tr&&c==tc)return true;return false;}/*
-state.a[r][c]=Cell.G;//Cell v1;
-	int r1=r,c1=c,dy=tr-r1,dx=tc-c1;
-	boolean isVertical=Math.abs(dy)>Math.abs(dx)
-		,pstv=isVertical?dy>0:dx>0;
-
-	//1st direction preference
-	if(isVertical)r1+=pstv?1:-1;else c1+=pstv?1:-1;
-	//v1=getCell(r1, c1);
-	if(state.getCell(r1, c1)==Cell._)//v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{state.a[r1][c1]=Cell.O;
-		if(recurs(r1,c1))
-		{Direction d=isVertical
-			?(pstv?Direction.dn:Direction.up)
-			:(pstv?Direction.rt:Direction.lf);
-			push( d);
-			return true;}}
-
-	//2nd direction preference, will use a perpendicular direction, and try to choose a +ve/-ve according to the goal dx or dy
-	if(isVertical){r1=r;c1=c+(dx>0?1:-1);}else{c1=c;r1=r+(dy>0?1:-1);}
-	//v1=getCell(r1, c1);
-	if(state.getCell(r1, c1)==Cell._)//v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{state.a[r1][c1]=Cell.O;
-	 if(recurs(r1,c1))
-	 {Direction d=isVertical//(pstv?Direction.dn:Direction.up):(pstv?Direction.rt:Direction.lf);
-			?(dx>0?Direction.rt:Direction.lf)
-			:(dy>0?Direction.dn:Direction.up);
-		push( d);
-		return true;}}
-
-	//3rd direction preference, will use a perpendicular direction, and choose -ve/+ve opposing the previous 2nd-direction
-	if(isVertical){r1=r;c1=c+(dx>0?-1:1);}else{c1=c;r1=r+(dy>0?-1:1);}
-	//v1=getCell(r1, c1);
-	if(state.getCell(r1, c1)==Cell._)//v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{state.a[r1][c1]=Cell.O;
-	 if(recurs(r1,c1))
-	 {Direction d=!isVertical
-			?(dy<0?Direction.dn:Direction.up)
-			:(dx<0?Direction.rt:Direction.lf);
-		push( d);
-		return true;}}
-
-	//4th direction preference
-	if(!isVertical){r1=r;c1=c+(pstv?-1:1);}else{c1=c;r1=r+(pstv?-1:1);}
-	//v1=getCell(r1, c1);
-	if(state.getCell(r1, c1)==Cell._)//v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{state.a[r1][c1]=Cell.O;
-	 if(recurs(r1,c1))
-	 {Direction d=isVertical
-			?(!pstv?Direction.dn:Direction.up)
-			:(!pstv?Direction.rt:Direction.lf);
-		push( d);
-		return true;}}
-	state.a[r][c]=Cell.D;
-	return false;
- }*/
-
-//boolean recurs(int ){}
-
-/**
-void checkMousePathShortCuts1()
-{LinkedList<Point>ll=new LinkedList<Point>();
- int n=mousePath.size(),y=mr,x=mc,i=n-1,j,count=0;
- Point p,q;Direction d;
- ll.add(p=new Point(x,y));
- while(i>=0)//r!=ppr&&c!=ppc)
- {	d=mousePath.get(i);
-	if(d==Direction.up)y--;
-	else if(d==Direction.dn)y++;
-	else if(d==Direction.rt)x++;
-	else if(d==Direction.lf)x--;
-	ll.add(new Point(x,y));
-	i--;
- }//while
- i=n-1;
- while(i>=0)
- {	p=ll.get(i);
- 	j=i-2;
- 	while(j>=0)
- 	{	q=ll.get(j);
-		d=(p.x==q.x&&p.y==q.y+1)?Direction.up
-		 :(p.x==q.x&&p.y==q.y-1)?Direction.dn
-		 :(p.y==q.y&&p.x==q.x+1)?Direction.rt
-		 :(p.y==q.y&&p.x==q.x-1)?Direction.lf
-		 :null;
-		if(d!=null)
-		{p("found short-cut between (index="+i+" y="+p.y+" x="+p.x+") and (index="+j+" y="+q.y+" x="+q.x+") ,direction="+d+" ,count="+(++count));
-		 i=j+1;
-		}
-		j--;
-	}//while
-	i--;
- }//while
-}//checkMousePathShortCuts
-
-void checkMousePathShortCuts()
-{short[][]a=mousePathShortCuts;
- if(a==null||a.length!=state.a.length)
-	a=mousePathShortCuts=new short[state.a.length][];
- for(int r=0;r<a.length;r++)
- {if(a[r]==null||a[r].length!=state.a[r].length)
-	a[r]=new short[state.a[r].length];
-	for(int c=0;c<a[r].length;c++)
-		a[r][c]=Short.MAX_VALUE;}
- int r=mr,c=mc,n=mousePath.size();
- a[r][c]=(short)(n<<2);
- for(int i=n-1;i>=0;i--)
- {Direction d=mousePath.get(i);
-	if(d==Direction.up)r++;
-	else if(d==Direction.dn)r--;
-	else if(d==Direction.rt)c--;
-	else if(d==Direction.lf)c++;
-	a[r][c]=(short)(d.ordinal()+(i<<2));}
- r=mr;c=mc;
- for(int i=n-1;i>=0;i--)
- {Direction d=mousePath.get(i);
-	if(d==Direction.up)r++;
-	else if(d==Direction.dn)r--;
-	else if(d==Direction.rt)c--;
-	else if(d==Direction.lf)c++;
-	a[r][c]=(short)(d.ordinal()+(i<<2));}
- 
-}//
-*/short[][]mousePathShortCuts;
 
 }//class PathFinder 
 
