@@ -15,10 +15,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
@@ -39,8 +37,19 @@ JFrame frame;
 JTextArea ta;
 static JLabel status;
 static int ppr,ppc,mr,mc;
-//static List<Direction> mousePath=new LinkedList<Direction>();
-State state=new State("XXXX\nX  X\nXODGX\nXXXXX",true);
+State state=new State(//"XXXX\nX  X\nXODGX\nXXXXX"
+"XXXXXXXXXXXXXXXXXXXXXX\n"+
+"XOX  X               X\n"+
+"X D  D D      G G    X\n"+
+"X D  D D      G G    X\n"+
+"X    D D      G G    X\n"+
+"XXDDDD D  DGGGG G    X\n"+
+"X      D        GG   X\n"+
+"X  DDDDD   GGGGGGG   X\n"+
+"X                    X\n"+
+"X                    X\n"+
+"XXXXXXXXXXXXXXXXXXXXXX\n"
+		,true);
 boolean saveUndo=true;
 Cell design;
 
@@ -82,7 +91,7 @@ void menu(String s){
 	menu.add(mi);mi.addActionListener(this);}
 
  public SokobanSolver() {
-	frame=new JFrame("OldSokobanSolver 2011, by mohamadjb@gmail.com");
+	frame=new JFrame("SokobanSolver 2013, by mohamadjb@gmail.com");
 	Container cp=frame.getContentPane();
 	cp.setLayout(new BorderLayout());
 	cp.add(ta=new JTextArea(),BorderLayout.NORTH);
@@ -115,13 +124,11 @@ void menu(String s){
 	loadLevels();
 	frame.setVisible(true);status("loaded");}
 
- static Map<String,BufferedImage>imgs=new HashMap<String,BufferedImage>();
+ //static Map<String,BufferedImage>imgs=new HashMap<String,BufferedImage>();
 
- static BufferedImage img(String fileName){
-	 BufferedImage r=imgs.get(fileName);
-	 if(r==null)try{
-		 imgs.put(fileName, r=ImageIO.read(new File(fileName)));
-	 }catch(Exception x){x.printStackTrace();}return r;}
+// static BufferedImage img(Cell c){BufferedImage r=imgs.get(c);if(r==null)try{imgs.put(c, r=ImageIO.read(new File(c.fileName)));}catch(Exception x){x.printStackTrace();}return r;}
+ 
+// static BufferedImage imgOld(String fileName){BufferedImage r=imgs.get(fileName);if(r==null)try{imgs.put(fileName, r=ImageIO.read(new File(fileName)));}catch(Exception x){x.printStackTrace();}return r;}
 
  public static void main(String[]args){new SokobanSolver();}
 
@@ -130,10 +137,32 @@ enum Cell{/**Wall obstacle*/X ,/**space*/_(true)
 	,/**Goal location*/G(true) ,/**player location*/O(true)
 	,/**player standing on a goal*/o(true)
 	,/**a crater or block or box on a goal*/d;
- BufferedImage img(){return SokobanSolver.img(
-		(this==o?"og":this==d?"dg":toString())+".png");}
- public boolean free;Cell(){free=false;}Cell(boolean f){free=f;}
-};
+//BufferedImage img(){return SokobanSolver.img((this==o?"og":this==d?"dg":toString())+".png");}
+//static Map<Cell,BufferedImage>imgs=new HashMap<Cell,BufferedImage>();
+BufferedImage img;BufferedImage img(){return img;}
+//File imgFile(){return new File();}
+
+ public boolean free;Cell(){this(false);}
+ Cell(boolean f){free=f;loadImage();}
+
+ void loadImage()
+ {Cell t=this;try
+ {String fileName=(t==o?"og":(t==d?"dg":toString()))+".png";
+	img=ImageIO.read(new File(fileName));}
+ catch(Exception x)
+ {	x.printStackTrace();
+	img=new BufferedImage(16,16,BufferedImage.TYPE_INT_RGB);
+	Graphics g=img.getGraphics();String s=toString();char c=s.charAt(0);
+	g.setColor(c=='X'?java.awt.Color.black
+		:c=='D'?java.awt.Color.yellow
+		:c=='o'||c=='d'||c=='G'?java.awt.Color.green
+		:java.awt.Color.white);
+	g.fillRect(0,0,16,16);
+	g.setColor(c=='O'||c=='o'?java.awt.Color.red:java.awt.Color.blue);
+	g.drawString(s, 0, 10);}}
+
+}//enum Cell
+
 enum Direction{up(true,false,0,-1),dn(true,true,0,1),rt(false,true,1,0),lf(false,false,-1,0);
  public boolean vert,postv;public int dx,dy;
  Direction(boolean v,boolean p,int x,int y){vert=v;postv=p;dx=x;dy=y;}
@@ -141,23 +170,24 @@ enum Direction{up(true,false,0,-1),dn(true,true,0,1),rt(false,true,1,0),lf(false
  {int dx=x2-x1,dy=y2-y1;
  	return Math.abs(dx)>Math.abs(dy)
  		?(dx<0?lf:rt):(dy<0?up:dn);}
- static Direction dir(int a,int b,int c){return dir(a%c,a/c , b%c,b/c);}
+ //static Direction dir(int a,int b,int c){return dir(a%c,a/c , b%c,b/c);}
+ static Direction dir(DirNode a,DirNode b){return dir(a.c,a.r , b.c,b.r);}
  int loc(int loc,int c){int y=loc/c,x=loc%c;return (x+dx)+(y+dy)*c;}
 }//enum Direction
 
 class DirNode
 {/**the move from the previous state to this state*/
-Direction d;DirNode p,n;
+Direction dir;DirNode p,n;
 /**pathLength is the steps count from the start of the path to this node.
 the estimated is the steps count from the start to the target location using the manhattenDistance
 */public int estimated,pathLength,r,c;//,location;
 
 void loc(int row,int col){r=row;c=col;}//location=loc;
 DirNode(int r,int c){loc(r,c);}//location=loc;
-DirNode(Direction d,DirNode p){this.d=d;if((this.p=p)!=null)p.n=this;}
+DirNode(Direction d,DirNode p){dir=d;if((this.p=p)!=null)p.n=this;}
 DirNode(DirNode p,int r,int c){loc(r,c);if((this.p=p)!=null)p.n=this;}
 DirNode copy(){return copy(null);}
-DirNode copy(DirNode n){DirNode r=new DirNode(d,null);r.p=p==null?p:p.copy(r);r.n=n;return r;}
+DirNode copy(DirNode n){DirNode r=new DirNode(dir,null);r.p=p==null?p:p.copy(r);r.n=n;return r;}
 
 /*void paint(Graphics g){
 	g.drawString("dirPref:"+dirPref+" ,dimY:"+dimY+" ,pstv:"+pstv
@@ -179,17 +209,10 @@ DirNode dequeue(){if(n!=null)n.p=p;if(p!=null)p.n=n;DirNode r=n;n=p=null;return 
 DirNode link(DirNode x){if(x!=null){x.p=this;x.n=n;if(n!=null)n.p=x;n=x;}return x;}
 
 /**find estimate node*/
-DirNode findE(int e)
-{if(n==null||e<estimated)return this;
- DirNode n=this;
- while(n.n!=null&&e>n.estimated)n=n.n;
- return n;}
-/**find estimate node*/
-DirNode findE(int e,DirNode t)
-{if(n==null||e<estimated)return this;
- DirNode n=this;
- while(n.n!=null&&e>n.estimated && t.p!=null && )n=n.n;//TODO: incomplete implementation
- return n;}
+DirNode findE(int e,DirNode p)
+{DirNode n=this;
+ while(e>n.n.estimated && e<p.estimated){n=n.n;p=p.p;}
+ return e>=p.estimated?p:n;}
 
 }//class DirNode
 
@@ -199,7 +222,7 @@ class State
  ,/**count of goals which are not filled*/countG
  ,/**count of Craters which are not on goal*/countD;
 
- DirNode d;
+ DirNode dirnode;
 
  /**nxt:if true s.next=this state and this.prev=s, otherwise this.next=s and s.prev=this*/
  public State(State p){copy(p);}
@@ -250,7 +273,7 @@ public String toString()
  public State copy(){return new State(this);}
 
  /**return a copy ,which will be the this.next modified from this state to a move by direction parameter*/
-public State copy(Direction p){copy();d.d=p;
+public State copy(Direction p){copy();dirnode.dir=p;
 	int r=ppr,c=ppc;
 	mov(ppr, ppc, p, false);//p==p.up||p==p.dn, p==p.rt||p==p.dn
 	ppr=r;ppc=c;return this;}
@@ -262,13 +285,13 @@ public State copy(State p)
 			a[row]=new Cell[p.a[row].length];
 		for(int col=0;col<a[row].length;col++)
 			a[row][col]=p.a[row][col];
-	}d=p.d;return this;}
+	}dirnode=p.dirnode;return this;}
 
 /**returns a count which is the number of craters that are on not on any goal.*/
 int updateCounts()
 {countD=0;countd=0;countG=0;for(int row=0;row<a.length;row++)
  for(int col=0;col<a[row].length;col++)
- {Cell v=a[row][col];if(v==v.D)countD++;else if(v==v.d)countd++;else if(v==v.G)countG++;
+ {Cell v=a[row][col];if(v==Cell.D)countD++;else if(v==Cell.d)countd++;else if(v==Cell.G)countG++;
  }return countD;}
 
 Cell getCell(int location){return getCell(location/cols,location%cols);}
@@ -358,18 +381,9 @@ void pLoc(int pr,int pc,int nr,int nc)
 class PathFinder extends State
 {PathFinder(State p){super(p);}
 	//int tr,tc;
-	DirNode q,m,start,target,grid[][];
+	DirNode q,start,target,grid[][];
 
- void pathClear()
- {if(grid==null||grid.length!=state.a.length)grid=new DirNode[state.a.length][];
-	for(int i=0;i<grid.length;i++)
-	{if(grid[i]==null||grid[i].length!=state.a[i].length)
-		grid[i]=new DirNode[state.a.length];
-	 for(int j=0;j<grid[i].length;j++)grid[i][j]=null;
-	}
- }
-
- int size(){int r=0;DirNode p=d;while(p!=null){r++;p=p.p;}return r;}
+ int size(){int r=0;DirNode p=target;while(p!=null){r++;p=p.p;}return r;}
 
 // void push(Direction p){d=new DirNode(p,d,0);}
 
@@ -381,83 +395,94 @@ class PathFinder extends State
 	Cell c=getCell(targetRow,targetCol);
 	if(c==null || !c.free)return;
 
-	d=start;
+	DirNode d=start;
 	if(d==null)d=new DirNode(startRow,startCol);
 	else{d.loc(startRow,startCol);d.n=d.p=null;}
-	d.d=Direction.dir(startCol, startRow, targetCol, targetRow);
+	d.dir=Direction.dir(startCol, startRow, targetCol, targetRow);
 	q=start=d;
 
 	d=target;
 	if(d==null)d=new DirNode(targetRow,targetCol);
 	else{d.loc(targetRow,targetCol);d.n=d.p=null;}
-	target=d;
+	target=d;start.p=target.n=null;
 
-	findPath();
-	d=target;
-	while(d!=null && d!=start )
-	{	m=d.p;
-		for(Direction dir:Direction.values())
-		{
-			
-		}
-	}
- }
+	findPath();if(grid!=null)
+	{	int z=grid.length*cols;
+		d=target;start.p=target.n=null;
+		while(d!=null && d!=start && --z>0)
+		{	DirNode m=d.p;
+			for(Direction dir:Direction.values())
+			{	DirNode nbr=grid(d.r+dir.dy,d.c+dir.dx);
+				if(nbr!=null&&nbr.pathLength<m.pathLength)
+					m=nbr;
+			}m.n=d;d.p=m;
+			m.dir=Direction.dir(m, d);
+			d=m;
+}}}
+
+ DirNode grid(int y,int x)
+ {return y>=0&& y<grid.length 
+	&&grid[y]!=null&&x>=0&& 
+	x<grid[y].length?grid[y][x]:null;}
  
  void findPath()
  {	int x=target.c-start.c,y=target.r-start.r;
-	q=start;q.p=q.n=null;
-	DirNode qTail=start;
+	DirNode qTail=q=start;q.p=q.n=null;
 	if((Math.abs(x)==1 && y==0) || (Math.abs(y)==1 && x==0))
 		return;
 
-	pathClear();
-	grid[target.r][target.c]=target;
-	grid[start.r][start.c]=d=start;
+	//gridClear();
+	if(grid==null||grid.length!=state.a.length)
+		grid=new DirNode[state.a.length][];
+	for(int i=0;i<grid.length;i++)
+	{if(grid[i]==null||grid[i].length!=state.a[i].length)
+		grid[i]=new DirNode[state.a.length];
+	 for(int j=0;j<grid[i].length;j++)grid[i][j]=null;
+	}
 
-	replace(Cell.D,Cell.d,Cell.X  ,Cell.G,Cell._  ,Cell.o,Cell.O);
+	grid[target.r][target.c]=target;
+	grid[start.r][start.c]=start;
+
+	//replace(Cell.D,Cell.d,Cell.X  ,Cell.G,Cell._  ,Cell.o,Cell.O);
 	while(q!=null)
-	{m=q;q=q.dequeue();
+	{DirNode m=q;q=q.dequeue();
 		for(Direction dir:Direction.values())
-		{	Cell c=getCell(y=m.r+dir.dy,x=m.c+dir.dx);
+		{	Cell c=getCell(
+				y=m.r+dir.dy,
+				x=m.c+dir.dx);
 			if(c!=null&&c.free)
 			{	if(x==target.c 
 				&& y==target.r)
-				{	m.d=dir;
+				{	m.dir=dir;
 					m.n=target;
 					target.p=m;
 					return;
-				}
-				if(	y>=0
-					&& y<grid.length 
-					&&grid[y]!=null
-					&&x>=0&& 
-					x<grid[y].length &&
-					grid[y][x]==null)
-				{	d=new DirNode(m,y,x);
-					d.pathLength
-						=Math.abs(start.r-d.r)
-						+Math.abs(start.c-d.c);
-					d.estimated=d.pathLength
-						+Math.abs(target.r-d.r)
-						+Math.abs(target.c-d.c);
-					if(q==null)q=qTail=d;else 
-					if(d.estimated<q.estimated)
-					{d.link(q);q=d;}else 
-					if(d.estimated>=qTail.estimated)
-						qTail=qTail.link(d);
+				}else if(grid(y,x)==null)
+				{	DirNode nbr=new DirNode(m,y,x);
+					nbr.pathLength
+						=Math.abs(start.r-nbr.r)
+						+Math.abs(start.c-nbr.c);
+					nbr.estimated=nbr.pathLength
+						+Math.abs(target.r-nbr.r)
+						+Math.abs(target.c-nbr.c);
+					if(q==null)q=qTail=nbr;else 
+					if(nbr.estimated<q.estimated)
+					{nbr.link(q);q=nbr;}else 
+					if(nbr.estimated>=qTail.estimated)
+						qTail=qTail.link(nbr);
 					else
-						q.findE(d.estimated).link(d);
-					grid[d.r][d.c]=d;
+						q.findE(nbr.estimated,qTail).link(nbr);
+					grid[y][x]=nbr;
 				}
 			}
 		}
 	}
  }//findPath
 
-void replace(Cell o,Cell v)
+/*void replace(Cell o,Cell v)
 {for(int r=0;r<a.length;r++)
  for(int c=0;r<a[r].length;c++)
- if(a[r][c]==o)a[r][c]=v;}
+ if(a[r][c]==o)a[r][c]=v;}*/
 
 void replace(
  Cell o1,Cell o12,Cell v1
@@ -487,7 +512,7 @@ void find(State p,int row,int col,int cr,int cc)
 
 boolean canReach(int pr,int pc,int tr,int tc)
 {if(pf==null)pf=new PathFinder(this);
-	pf.pLoc(pr,pc);pf.pathClear();
+	pf.pLoc(pr,pc);//pf.gridClear();
 	pf.findPath(this, pr, pc, tr,tc);
 	return pf.start!=null;}
 
@@ -574,7 +599,7 @@ public void paint(Graphics g){
 	}*/int mpc=0;
 	try{DirNode dn=mousePathFinder==null?null:mousePathFinder.start;
 		int r0=ppr,c0=ppc,r1=r0,c1=c0;
-		while(dn!=null){mpc++;Direction d=dn.d;
+		while(dn!=null){mpc++;Direction d=dn.dir;
 		if(d==Direction.up)r1--;else
 		if(d==Direction.dn)r1++;else
 		if(d==Direction.rt)c1++;else
@@ -599,13 +624,17 @@ public void mouseMoved(MouseEvent e)
 	w=dim.width/cols;h=dim.height/rows;
 	int r=e.getY()/h,c=e.getX()/w;
 	if(r!=mr||c!=mc)
-	{mr=r;mc=c;updateMousePath();repaint();}}
+	{mr=r;mc=c;
+	
+	if(e.getClickCount()>0)
+		updateMousePath();
+	repaint();}}
 
 
 void updateMousePath()
-{if(mousePathFinder==null)mousePathFinder=new PathFinder(state);
- mousePathFinder.findPath(state, ppr, ppc, mr, mc);
-}
+{	if(mousePathFinder==null)
+		mousePathFinder=new PathFinder(state);
+	mousePathFinder.findPath(state, ppr, ppc, mr, mc);}
 
 PathFinder mousePathFinder;
 BlockMoves blockMoves;
@@ -706,22 +735,11 @@ boolean computeMP(State s,int ppr,int ppc)
 public void mouseClicked(MouseEvent e) 
 {if(thread!=null){thread=null;mouseMoved(e);return;}
  if(blockMoves!=null&&blockMoves.canMove(mr, mc)){}
+ updateMousePath();//if(mousePathFinder==null)mousePathFinder=new PathFinder(state);
  if(mousePathFinder.start!=null)
-	{//state.a[ppr][ppc]=state.a[ppr][ppc]==Cell.o?Cell.G:Cell._;
-	 //state.a[mr][mc]=state.a[mr][mc]==Cell.G?Cell.o:Cell.O;
-	 //ppr=mr;ppc=mc;mousePathFinder.pathClear();
-	 startMousePath();
+	{startMousePath();
 	 repaint();}
-else{/*Direction d=(ppc==mc&&ppr==mr+1)?Direction.up
-		 :(ppc==mc&&ppr==mr-1)?Direction.dn
-		 :(ppr==mr&&ppc==mc-1)?Direction.rt
-		 :(ppr==mr&&ppc==mc+1)?Direction.lf
-		 :null;
-	Cell v=state.getCell(mr,mc);
-	if(d!=null&&v==Cell.D||v==Cell.d)
-	{	state.mov(ppr, ppc, d==d.up||d==d.dn, d==d.dn||d==d.rt, true);
-		repaint();
-	}*/Cell v=state.getCell(mr,mc);
+ else{Cell v=state.getCell(mr,mc);
 	if(v==Cell.d||v==Cell.D)
 	{if(blockMoves==null)blockMoves=new BlockMoves(state);
 	 blockMoves.find(state, mr, mc, ppr, ppc);
@@ -746,28 +764,28 @@ public void keyReleased(KeyEvent e) {keyTyped(e);}
 public void keyTyped(KeyEvent e)
 {int kc=e.getKeyCode();
 	p("keyTyped:isAltDown="+e.isAltDown()+" ,getKeyCode="+kc+" ,event="+e);
-	if(e.isAltDown()&&kc==e.VK_SPACE)
+	if(e.isAltDown()&&kc==KeyEvent.VK_SPACE)
 		ta.setText(state.toString());
 	boolean b=false;
-	if(b=(e.isAltDown()&&kc==e.VK_ENTER))
+	if(b=(e.isAltDown()&&kc==KeyEvent.VK_ENTER))
 		state.load(ta.getText(),true);else
-	if(b=kc==e.VK_UP  )state.mov(ppr,ppc,Direction.up,true);
-	else if(b=kc==e.VK_DOWN)state.mov(ppr,ppc,Direction.dn ,true);
-	else if(b=kc==e.VK_LEFT)state.mov(ppr,ppc,Direction.lf,true);
-	else if(b=kc==e.VK_RIGHT)state.mov(ppr,ppc,Direction.rt,true);
-	//else if(b=kc==e.VK_Z)state=state.prev;
-	//if(kc==e.VK_F1){if(base!=null)base=null;else{base=top=new MousePathStackFrame(state.copy(), ppr, ppc);if(!b)updateMousePath();}}
-	//if(kc==e.VK_F2&&top!=null)top.computeMP();
-	if(kc==e.VK_G)design=Cell.G;
-	if(kc==e.VK_X)design=Cell.X;
-	if(kc==e.VK_D)design=Cell.D;
-	if(kc==e.VK_SPACE)design=Cell._;
-	if(kc==e.VK_P)design=Cell.O;
-	if(kc==e.VK_M)design=null;
+	if(b=kc==KeyEvent.VK_UP  )state.mov(ppr,ppc,Direction.up,true);
+	else if(b=kc==KeyEvent.VK_DOWN)state.mov(ppr,ppc,Direction.dn ,true);
+	else if(b=kc==KeyEvent.VK_LEFT)state.mov(ppr,ppc,Direction.lf,true);
+	else if(b=kc==KeyEvent.VK_RIGHT)state.mov(ppr,ppc,Direction.rt,true);
+	//else if(b=kc==KeyEvent.VK_Z)state=state.prev;
+	//if(kc==KeyEvent.VK_F1){if(base!=null)base=null;else{base=top=new MousePathStackFrame(state.copy(), ppr, ppc);if(!b)updateMousePath();}}
+	//if(kc==KeyEvent.VK_F2&&top!=null)top.computeMP();
+	if(kc==KeyEvent.VK_G)design=Cell.G;
+	if(kc==KeyEvent.VK_X)design=Cell.X;
+	if(kc==KeyEvent.VK_D)design=Cell.D;
+	if(kc==KeyEvent.VK_SPACE)design=Cell._;
+	if(kc==KeyEvent.VK_P)design=Cell.O;
+	if(kc==KeyEvent.VK_M)design=null;
 	if(b){if(design==null)updateMousePath();repaint();}}
 
 public void actionPerformed(ActionEvent e)
-{Object src=e.getSource();
+{//Object src=e.getSource();
 	String s=e.getActionCommand();
 	if("load class".equals(s)){s=prompt("type class name");if(s!=null)try{p(String.
 		valueOf(Class.forName(s)));}catch(Exception x){x.printStackTrace();}}
@@ -797,7 +815,7 @@ int mousePathOffsetX=0,mousePathOffsetY=0
 boolean runMousePath()
 {if(mousePathFinder.start==null)
  {mousePathTrgtR=mousePathTrgtC=-1;return false;}
- switch(mousePathFinder.start.d)
+ switch(mousePathFinder.start.dir)
 	{case up:mousePathOffsetY-=mousePathOffsetSpeed;
 		if(mousePathOffsetY<=-h)
 		{mousePathFinder.start=mousePathFinder.start.p;
@@ -830,7 +848,8 @@ void startThread()
 	{thread.start();p("thread.start");}}
 
 public void run()
-{	Thread thrd=Thread.currentThread();p("run:begin");
+{	Thread thrd=Thread.currentThread();
+	p("run:begin");
 	while(thrd==thread)try{
 		boolean b=runMousePath();
 		b|=runBlockMove();
@@ -843,3 +862,19 @@ public void run()
 	p("run:exit");}
 
 }//class SokobanSolver
+
+/*
+
+XXXXXXXXXXXXXXXXXXXXXX
+XOX  X               X
+X D  D D      G G    X
+X D  D D      G G    X
+X    D D      G G    X
+XXDDDD D  DGGGG G    X
+X      D        GG   X
+X  DDDDD   GGGGGGG   X
+X                    X
+X                    X
+XXXXXXXXXXXXXXXXXXXXXX
+
+*/
