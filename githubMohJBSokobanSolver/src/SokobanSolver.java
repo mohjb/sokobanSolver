@@ -29,7 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JTextArea;
 
 public class SokobanSolver extends JPanel
-implements KeyListener,MouseListener,MouseMotionListener,ActionListener,Runnable
+implements KeyListener,MouseListener,MouseMotionListener,ActionListener
 {private static final long serialVersionUID = -8615408389885762774L;
 Thread thread;
 
@@ -37,10 +37,12 @@ JFrame frame;
 JTextArea ta;
 static JLabel status;
 static int ppr,ppc,mr,mc;
-State state=new State(//"XXXX\nX  X\nXODGX\nXXXXX"
+
+
+State state=new State(
 "XXXXXXXXXXXXXXXXXXXXXX\n"+
 "XOX  X               X\n"+
-"X D  D D      G G    X\n"+
+"X D    D     DG G    X\n"+
 "X D  D D      G G    X\n"+
 "X    D D      G G    X\n"+
 "XXDDDD D  DGGGG G    X\n"+
@@ -64,27 +66,234 @@ JMenu menu;
 String[]levels;
 
 void loadLevels()
-{try{File f=new File("levels.levels");
- FileInputStream fr=new FileInputStream(f);
- byte[]b=new byte[(int)f.length()];
- fr.read(b);
- fr.close();
- String s=new String(b);
- p("loading levels.levels:\n"+s);
- int i=s.indexOf("\n\n"),n=s.length(),j=0;
- if(i==-1){levels=new String[1];levels[0]=s.trim();}else{
- LinkedList<String>ll=new LinkedList<String>();
- while(j<n&&s.charAt(j)=='\n')j++;
- while(i!=-1)
- {i+=2;
-	ll.add(s.substring(j, i));j=i;
-	while(j<n&&s.charAt(j)=='\n')j++;
-	i=s.indexOf("\n\n",j);
- }if(j<n)ll.add(s.substring(j,n));
- levels=new String[ll.size()];
- ll.toArray(levels);}
- for(i=0;i<levels.length;i++)menu("level "+i);
-}catch(Exception x){x.printStackTrace();}}
+{try
+ {	File f=new File("levels.levels");
+	FileInputStream fr=new FileInputStream(f);
+	byte[]b=new byte[(int)f.length()];
+	fr.read(b);
+	fr.close();
+	String s=new String(b);
+	p("loading levels.levels:\n"+s);
+	int i=s.indexOf("\n\n"),n=s.length(),j=0;
+	if(i==-1){levels=new String[1];levels[0]=s.trim();}else
+	{	LinkedList<String>ll=new LinkedList<String>();
+		while(j<n&&s.charAt(j)=='\n')j++;
+		while(i!=-1)
+		{	i+=2;
+			ll.add(s.substring(j, i));j=i;
+			while(j<n&&s.charAt(j)=='\n')j++;
+			i=s.indexOf("\n\n",j);
+		}if(j<n)ll.add(s.substring(j,n));
+		levels=new String[ll.size()];
+		ll.toArray(levels);
+	}
+ }catch(Exception x)
+ {	x.printStackTrace();
+	String[]ll={
+"XXXX\nX  X\nXODGX\nXXXXX"
+,
+"XXXXXXXXXXXXXXXXXXXXXXX\n"+
+"XOX  X               XX\n"+
+"X D    D     DG G    XX\n"+
+"X D  D D      G G    XX\n"+
+"X    D D      G G    XX\n"+
+"XXDDDD D  DGGGG G    XX\n"+
+"X      D        GG   XX\n"+
+"X  DDDDD   GGGGGGG   XX\n"+
+"X                    XX\n"+
+"X                    XX\n"+
+"XXXXXXXXXXXXXXXXXXXXXXX\n"
+,
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"+
+"X                                     XX\n"+
+"X     XXXXXXXXXX    XXXXXXXXXXXXXXX   XX\n"+
+"X              X    X             X   XX\n"+
+"X              X    X        O    X   XX\n"+
+"X              XXXXXX             X   XX\n"+
+"X                                 X   XX\n"+
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+,
+
+"X\n"+
+"XGX\n"+
+"X O X\n"+
+"X     X\n"+
+"X  D    X\n"+
+"XG   D D  X\n"+
+"X    D   GX\n"+
+"X  D D  X\n"+
+"XG   GX\n"+
+"X   X\n"+
+"XGX\n"+
+" X"
+,
+"XXXXX\n"+
+"X O XXX\n"+
+"XX XD  X\n"+
+"X dG G X\n"+
+"X  DD XX\n"+
+"XXX XGX\n"+
+"X   X\n"+
+"XXXXX"
+,
+"XXXXX\n"+
+"X   XXXXX\n"+
+"X X X   X\n"+
+"X D   D X\n"+
+"XGGXDXDXX\n"+
+"XGOD   X\n"+
+"XGG  XXX\n"+
+"XXXXXX"
+,
+"XXXXXX          \n"+
+"X   DG X  XXXXX \n"+
+"XGD    X X    GX\n"+
+"XXXX GXX XG  D X\n"+
+"XXX  X  XXX  XX \n"+
+"XX  X   XX DX   \n"+
+"X  X    XG X    \n"+
+"XXXXDXXXXXXXDXXX\n"+
+"X       O      X\n"+
+"XXXXXXXXXXXXXXXX"
+,
+"XXXX        \n"+
+"XXX  XXXX   \n"+
+"XXXX D  X  X\n"+
+"X D  D D   X\n"+
+"X X XDXDX  X\n"+
+"X GGGGOGG XX\n"+
+"XXXXXXXXXXX"
+,
+"XXXXXXX\n"+
+"XGGG  X\n"+
+"X X D X\n"+
+"X  D  X\n"+
+"XXXD XX\n"+
+"X OX\n"+
+"XXXX"
+,
+"XXXXX\n"+
+"XXX  OX\n"+
+"X  D  X\n"+
+"X    XXXXXXXXX\n"+
+"X XD   GGGG  X\n"+
+"X  D XXXXXXD X\n"+
+"XX  XX    X  X\n"+
+"XXXX     XXXX"
+,
+"XXXXX\n"+
+"XX O X\n"+
+"X    X  XXXXX    XXXXXX\n"+
+"XX   XXXXX   XXXXXX    X\n"+
+"XX   XX  GX   X   X  XX X\n"+
+"X G XX DXGXX dD  XX XX  X\n"+
+"X   XX  D  X GX  X     XX\n"+
+"X   XXX    XX   XX DDXG X\n"+
+"X  D  X  XXXX   XXXX  G X\n"+
+"X GD  XX X  XX XX  XX XXX\n"+
+"XXX XXXX X   X X    X X  \n"+
+"X X  X X   X X    X X    \n"+
+"XXX XXXX XXXXX XXXXXX XXX\n"+
+"X                       X\n"+
+"XXXXXXXXXXXXXXXXXXXXXXXXX"
+,
+
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"+
+"X                       G       XX\n"+
+"X     XXXXX   XX   X  X   XX    XX\n"+
+"X      D   X X  X  XX X  X  X   XX\n"+
+"X      X   X XXXX  X XX  XXXX   XX\n"+
+"X     XXXXX  X  X  X  X  X  X   XX\n"+
+"X O                             XX\n"+
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+,
+"   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"+
+"  XX             GX   XG                            GXX\n"+
+"XXX   XXXXXXXXXXXXX X XX       X XXXXXXXXXXXXXXXXX   XX\n"+
+"X     X             X GX       X                GX   XX\n"+
+"X     X XXXXXXXX XXXXXXX       X                 X   XX\n"+
+"X     X X  X   X X     X       X         O       X   XX\n"+
+"X     X X  X X XXX X   X       X                 X   XX\n"+
+"X     X      X     X   X      GX                 X   XX\n"+
+"X     XXXXXXXXXXXXXX   X XXXXXXX                 X   XX\n"+
+"X                                                    XX\n"+
+"XXXXXXXXXXXXXXXXXXXXXXXXXX     XXXXXXXXXXXXXXXXXXXXXXXX\n"+
+"XG                                                  GXX\n"+
+"X     XXXXXXXXXXXXXXXXXX X       XXXXXXXXXXXXXXXXX   XX\n"+
+"X     XG                 X       XG                  XX\n"+
+"X     X  X               X       X   XXXX XXXX X     XX\n"+
+"X     X  XGXXXX          X       X   X GX   GX X     XX\n"+
+"X     X  XXG   XXXXXXX   X       X   X  XGX    X     XX\n"+
+"X     X  X  XX  XG       XG      X   X    X XXXX  XXXXX\n"+
+"X     X  X  XX  X        XXXXXXX X   X XXXX      GX\n"+
+"XG       X                                       XX\n"+
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+,
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"+
+"O X                                        X       X      X      X               X                              XX\n"+
+"X X XXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  X XXXXX X  XXX X XXX  X XXXXXXXXXX X  X XXXXXX XXXXXXXXXXXXXXXXXXXXX XX\n"+
+"X X X      X      X            X        X  X X   X X  X X X X X  X X    X   X X  X X    X X          X        X XX\n"+
+"X X XXXXXX X XXXXXX X XXXXXXXX X XXXXXX X  X XXX X X  X X X X X  X X X  X X X X  X X X  X XXXXX  XXX XXXXXXXX X XX\n"+
+"X X        X X    X X X      X X X    X X  X   X X X  X X X   X  X X X  X X X X  X X X  X     X  X            X XX\n"+
+"X XXXXXXXXXX X X  X X X XXXX X X X X  X X  X X X X X  X X X XXX  X X X  X X XXX  X X XXXXXXXX X  XXXXXXXXXXXXXX XX\n"+
+"X            X X  X X X X    X X X X  X X  X X X X X  X X X X    X X X  X X      X X      X X X                 XX\n"+
+"XXXXXXXXXXXXXX XXXX X X X  XXX X X XXXX X  X X X X X  X X X X  X X X X  X XXXXX  X X X  X X X X  XXXXXXXXXXXXXXXXX\n"+
+"X   X        X      X X X    X X X    X X  X X X X X  X X X X  X X X X  X     X  X X X  X X X X  X     X        XX\n"+
+"X X X XXX  X XXXXXXXX X XXXX X X X X  X X  X X X X X  X X X X  X X XXX  XXXXX XXXX XXX  X X X X  X XXXXX  XXXXX XX\n"+
+"X X X   X  X          X    X X X X X  X X  X X X X X  X X X X  X X X        X           X   X X  X            X XX\n"+
+"X X XXXXX  XXXXXXXXXXXX X  X X X XXX  X X  XXX X X X  X X XXX  X X X XXXXXXXXXXXXXXXXXXXXXXXX X  XXXXXXXXXXXXXX XX\n"+
+"X X     X         X     X  X X X      X X      X   X  X        X X X X                        X                 XX\n"+
+"X XXXXX XXXXXXXX  XXXXXXX  X X XXXXXXXX XXXXXXXX XXX  XXXXXXXXXXXX X X  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XX\n"+
+"X X               X        X X        X        X X                 X X  X                          X X        X XX\n"+
+"X X XXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX  XXXXXXXX X X XXXXXXXXXXXXXXXXX X  XXXXX XXXXXXXXXXXXX XXXXXX X X XXXXXX X XX\n"+
+"X X X   X                                      X X X        X        X      X X    X      X X    X X   X      X XX\n"+
+"X XXX X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X X  XXX XXX  XXXXX XXXXXX X X  X X XXX  X X XXXX XXXXX  XXX X XX\n"+
+"X   X X                                          X X    X          X      X X X  X X X X  X X             X X X XX\n"+
+"X X X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X  XXXXXXXXXXXXXX  XXX X X X  X X X X  X XXXXXXXXXXXXXXX X X XX\n"+
+"X X X X                 X    X     X             X X  X               X X X X X  X X   X  X            X    X X XX\n"+
+"X X X X XXXXXXXXXXX XXX X  X X X X X  XXX  XXXXX X X  X XXXXXXXXXXXXXXX X X X X  X XXXXX  XXXXXXXXXXXX X  XXX X XX\n"+
+"X X X X      X      X X X  X X X X X    X  X     X X  X X               X X X X  X          X        X X      X XX\n"+
+"X X X XXXXXXXX XXXXXX X X  X XXX X XXXXXX  X XXXXX XXXX X XXX  X XXXXXXXX X X X  XXXXXXXXXX XXXXXXXX X X  XXXXX XX\n"+
+"X X X X      X    X   X X  X     X         X     X X    X   X  X X        X X X      X    X          X X  X   X XX\n"+
+"XXX X X  XXX XXX  X X X X  XXXXXXXXXXXXXXXXXXXXXXX X  XXXXXXX  X X XXXXXXXX X X  XXX X  XXXXXXXXXXXX X X  X XXX XX\n"+
+"X   X X  X        X X X X                        X X  X        X X X    X   X X    X X             X X X  X   X XX\n"+
+"X X X X  XXXXXXXXXX X X X  XXXXXXXXXXXXXXXXXXXXX X X  X XXXXXXXXXX XXXX X XXX XXXXXX XXXXXX XXX X  X X X  X X X XX\n"+
+"X X X X    X      X X X X  X     X         X   X X X  X                 X X X X    X      X X X X  X X X  X X X XX\n"+
+"X X X XXXX X XXX  X X X X  X XXX X X  XXX  X X X X X  XXXXXXXXXXXXXXXXXXX X X X  X XXXXX  X X X X  X X X  X X X XX\n"+
+"X X X X    X X    X X X X    X X X X  X X  X X X X X                    X X X X  X        X X X X  X X X  X X X XX\n"+
+"X X X X  XXX XXXXXX X X XXXXXX X XXX  X X  XXX X X XXXXXXXXXXXXX XXXXXX X X X X  XXXXXXXXXX X X XXXX X X  X X X XX\n"+
+"X X X X  X          X X X      X      X        X               X X    X X X X X      X    X X X      X X  X X X XX\n"+
+"X X X X  XXXXXXXXXXXX X X  XXXXX XXXXXXXXXXXXXXXXXXXXXXXXXXXX  X X X  X X X X X  XXX X X  X X XXXXXXXX X  X X X XX\n"+
+"X X X X  X            X X        X                 X    X   X  X X X  X X X X X  X   X X  X X        X X  X X X XX\n"+
+"X XXX X  X XXXXXXXXXXXX XXXXXXXX X XXXXXXXXXXXXXXX X  XXX X X  X XXX  X X X X X  X XXXXX  X X X XXXX X X  XXX X XX\n"+
+"X   X X  X                     X X X               X      X X  X      X X X   X  X X      X X X X    X X      X XX\n"+
+"X X X X  XXXXXXXXXXXXXXXXXXXXX XXX X  XXXXXXXXXXXXXXXXXXXXX X  XXXXXXXX X XXX X  X X XXX  X X X XXXXXX XXXXXX X XX\n"+
+"X X X X                      X X   X  X        X            X           X   X X  X X X X  X X X      X X      X XX\n"+
+"X X X X  XXXXXXXXXXXXXXXXXXX X X XXX  X XXXXXX X X XXXXXXXXXXXXXXXXXXXX XXX X XXXX X X X  X X XXXXXX X X  XXXXX XX\n"+
+"X X X X  X                 X X X X X  X X    X X X                    X X X X      X X    X X X      X X  X   X XX\n"+
+"X X X X  X X XXXXXXXXXXXX  X X X X X  X XXX  X X XXXXXXXXXXXXXXX XXX  X X X XXXXXXXX XXXXXX XXX  XXX X X  X XXX XX\n"+
+"X X X X  X X X      X      X X X X X  X X    X X X      X        X    X X X      X               X X X X  X   X XX\n"+
+"XXX X X  X X X XXX  X XXXXXX X X X X  X X X  X X X XXX  X XXX  XXXXXXXX X XXXXX  XXXXXXXXXXXXXXXXX X X X  X X X XX\n"+
+"X   X X  X X X X    X X X    X X X X  X X X  X X X X X  X X X  X              X             X      X X X  X X X XX\n"+
+"X X X X  XXX X XXXXXX X X  XXX X X X  X X XXXX X X X X  X X X  X XXXXXXXXXXXXXXXXXXXXXXXXXX X XXXXXX X X  X X X XX\n"+
+"X X X X      X          X  X X X X X  X X      X X X X  X X X  X X                          X        X X  X X X XX\n"+
+"X X X XXXXXXXXXXXXXXXXX X  X X X X X  X XXXXXX X X X X  X X X  X X XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX X  XXX X XX\n"+
+"X X X                 X X  X X X X    X      X X X X X  X X    X X X                                   X      X XX\n"+
+"X X XXXXXXXXXXXXXXXX  XXX  X X X XXX  X XXX  XXX X X X  X XXXXXX X X  XXXXXXXXXXXX XXXXXXXXXXXXXX  XXXXXXXXXXXX XX\n"+
+"X X X              X  X    X   X   X  X X X  X   X X    X        X X  X        X X X               X            XX\n"+
+"X X XXXXXXXX XXXXXXX  X XXXX XXXXX X  X X X  X XXX X XXXXXXXXXXXXX X  X XXXXX  X X X XXXXXXXXXXXXXXX XXXXXXXXXXXXX\n"+
+"X X          X        X X    X     X  X X X  X X   X             X X  X X   X  X X X        X      X X          XX\n"+
+"X XXXXXXXXXX X XXXXXXXX X  XXXXX XXX  X X X  X X X XXXXXXXXXXXXXXX X  X X XXX  X X XXXXXXXX X X X  X XXXXXXXXXX XX\n"+
+"X X        X X X        X  X   X X    X X X  X X X X               X    X   X  X X X      X X X X  X            XX\n"+
+"X X XXXXXXXX X X  X XXXXX  X X X X XXXX X X  X XXX X XXXXXXXXXXXXXXXXXXXXXX X  X X X XXXXXX XXX XXXXXXXXXXXXXXX XX\n"+
+"X X          X X  X X   X  X X X X X      X        X X  D  G   X            X  X X X            X               XX\n"+
+"X XXXXXXXXXXXX XXXX X XXX  X X X X XXXXXXXXXXXXXXXXX X  XXXXXXXX XXX  XXXXXXX  X X XXXXXXXXXXXXXX  XXXXXXXXXXXXXXX\n"+
+"X                   X        X   X                   XD          DGX             X                              XX\n"+
+"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+};levels=ll;
+}if(levels!=null)
+for(int i=0;i<levels.length;i++)menu("level "+i);
+}
 
 void menu(String s){
 	JMenuItem mi=new JMenuItem(s);
@@ -172,7 +381,8 @@ enum Direction{up(true,false,0,-1),dn(true,true,0,1),rt(false,true,1,0),lf(false
  		?(dx<0?lf:rt):(dy<0?up:dn);}
  //static Direction dir(int a,int b,int c){return dir(a%c,a/c , b%c,b/c);}
  static Direction dir(DirNode a,DirNode b){return dir(a.c,a.r , b.c,b.r);}
- int loc(int loc,int c){int y=loc/c,x=loc%c;return (x+dx)+(y+dy)*c;}
+ //int loc(int loc,int c){int y=loc/c,x=loc%c;return (x+dx)+(y+dy)*c;} 
+ Direction opposite(){return this==dn?up:this==up?dn:this==lf?rt:lf;}
 }//enum Direction
 
 class DirNode
@@ -180,39 +390,50 @@ class DirNode
 Direction dir;DirNode p,n;
 /**pathLength is the steps count from the start of the path to this node.
 the estimated is the steps count from the start to the target location using the manhattenDistance
-*/public int estimated,pathLength,r,c;//,location;
+*/public int estimated=Integer.MAX_VALUE,pathLength=Integer.MAX_VALUE,r,c;//,location;
 
+ public String locStr(){return "r:"+r+" ,c:"+c;}
+@Override public String toString()
+{return "{dir:"+dir+" ,"+locStr()
+	+" ,pathLength:"+pathLength+" ,estimated:"+estimated
+	+" ,p:"+(p==null?"null":"{"+p.locStr()+"}")
+	+" ,n:"+(n==null?"null":"{"+n.locStr()+"}")+"}";}
+
+DirNode(int r,int c){init(r,c);}//location=loc;
+//DirNode(Direction d,DirNode p){dir=d;if((this.p=p)!=null)p.n=this;}
+//DirNode(DirNode p,int r,int c){loc(r,c);if((this.p=p)!=null)p.n=this;}
+DirNode init(int r,int c){loc(r,c);n=p=null;dir=null;estimated=pathLength=Integer.MAX_VALUE;return this;}
 void loc(int row,int col){r=row;c=col;}//location=loc;
-DirNode(int r,int c){loc(r,c);}//location=loc;
-DirNode(Direction d,DirNode p){dir=d;if((this.p=p)!=null)p.n=this;}
-DirNode(DirNode p,int r,int c){loc(r,c);if((this.p=p)!=null)p.n=this;}
-DirNode copy(){return copy(null);}
-DirNode copy(DirNode n){DirNode r=new DirNode(dir,null);r.p=p==null?p:p.copy(r);r.n=n;return r;}
-
-/*void paint(Graphics g){
-	g.drawString("dirPref:"+dirPref+" ,dimY:"+dimY+" ,pstv:"+pstv
-		+" ,d:"+d+" ,stackState:"+stackState+" ,success:"+success
-		//,v1:"+v1+" +" ,dx:"+dx+" ,dy:"+dy ,dir:"+dir+" +" ,r1:"+r1+" ,c1:"+c1
-		,ppc*w+2,ppr*h+h2);
-	if(parent!=null)
-		lineArrow(g, parent.ppr, parent.ppc, ppr, ppc);
-	if(dir[0]!=null)dir[0].paint(g);
-	if(dir[1]!=null)dir[1].paint(g);
-	if(dir[2]!=null)dir[2].paint(g);
-	if(dir[3]!=null)dir[3].paint(g);
-}//paint*/
+//DirNode copy(){return copy(null);}DirNode copy(DirNode n){DirNode r=new DirNode(dir,null);r.p=p==null?p:p.copy(r);r.n=n;return r;}
 
 /**returns next, unlinks this.*/
 DirNode dequeue(){if(n!=null)n.p=p;if(p!=null)p.n=n;DirNode r=n;n=p=null;return r;}
 
 /**links x after this ;returns x*/
-DirNode link(DirNode x){if(x!=null){x.p=this;x.n=n;if(n!=null)n.p=x;n=x;}return x;}
+DirNode link(DirNode x){if(x!=null){if(x.p!=null||x.n!=null)x.dequeue();x.p=this;x.n=n;if(n!=null)n.p=x;n=x;}return x;}
+
+/**links x Before this ;returns x*/
+DirNode linkBefore(DirNode x){if(x!=null){if(x.p!=null||x.n!=null)x.dequeue();x.n=this;x.p=p;if(p!=null)p.n=x;p=x;}return x;}
 
 /**find estimate node*/
 DirNode findE(int e,DirNode p)
 {DirNode n=this;
  while(e>n.n.estimated && e<p.estimated){n=n.n;p=p.p;}
  return e>=p.estimated?p:n;}
+
+/*grid distance*/int dist(DirNode b){return Math.abs(r-b.r)+Math.abs(c-b.c);}
+
+/**find Neighbor that has the smallest pathLength, neighbors on the grid* /
+DirNode findNbr(PathFinder p)
+{DirNode n=null,x=null;
+	for(Direction d:Direction.values())
+	{	x=p.grid(r+d.dy, c+d.dx);
+		if(n==null||n.pathLength>x.pathLength)
+			n=x;
+	}
+	//dir=n==null?null:Direction.dir(this, n);
+	return n;
+}*/
 
 }//class DirNode
 
@@ -231,7 +452,7 @@ class State
 
 void load(String p,boolean playerPosition)
 {String[]lines=p.split("\n");Cols=0;
- int ln=lines.length,li=0;
+ int ln=lines.length,li=0;if(mousePathFinder!=null)mousePathFinder.grid=null;
  a=new Cell[ln][];countd=countD=countG=0;
  for(;li<ln;li++)
  {	String line=lines[li];
@@ -294,9 +515,9 @@ int updateCounts()
  {Cell v=a[row][col];if(v==Cell.D)countD++;else if(v==Cell.d)countd++;else if(v==Cell.G)countG++;
  }return countD;}
 
-Cell getCell(int location){return getCell(location/cols,location%cols);}
+//Cell getCell(int location){return getCell(location/cols,location%cols);}
 
-Cell getCell(int location,Direction dir){return getCell(dir.dy+location/cols,dir.dx+location%cols);}
+//Cell getCell(int location,Direction dir){return getCell(dir.dy+location/cols,dir.dx+location%cols);}
 
 Cell getCell(int row,int col)
 {return row<0||col<0
@@ -306,13 +527,13 @@ Cell getCell(int row,int col)
 	:a[row][col];}
 
 //Cell getCell(int row,int col,boolean dimY,boolean dirPstv){if(dimY)row+=dirPstv?1:-1;else col+=dirPstv?1:-1;return getCell(row, col);}
-Cell getCell(int row,int col,Direction dir){return getCell(dir.dy+row, dir.dx+col);}
+//Cell getCell(int row,int col,Direction dir){return getCell(dir.dy+row, dir.dx+col);}
 
 boolean isCanMove(int row,int col,Direction dir)
-{	Cell v=getCell(row, col, dir);
+{	Cell v=getCell(row+dir.dy, col+dir.dx);
 	if(v==null||v==Cell.X)return false;
 	if(dir.vert)row+=dir.dy;else col+=dir.dx;
-	if(v==Cell.D||v==Cell.d){Cell v2=getCell(row, col, dir);
+	if(v==Cell.D||v==Cell.d){Cell v2=getCell(row+dir.dy, col+dir.dx);
 		return v2!=null&&v2.free;}//!=Cell.X&&v2!=Cell.D&&v2!=Cell.d;
  return true;
 }
@@ -378,122 +599,120 @@ void pLoc(int pr,int pc,int nr,int nc)
 
 }//class State
 
-class PathFinder extends State
-{PathFinder(State p){super(p);}
-	//int tr,tc;
-	DirNode q,start,target,grid[][];
+class PathFinder
+{//PathFinder(State p){s=p;}
+	DirNode q,start,target,grid[][];State s;
 
  int size(){int r=0;DirNode p=target;while(p!=null){r++;p=p.p;}return r;}
 
-// void push(Direction p){d=new DirNode(p,d,0);}
-
- void findPath(State p,int startRow,int startCol,int targetRow,int targetCol)
- {findPath(startRow,startCol,targetRow,targetCol);}
-
- void findPath(int startRow,int startCol,int targetRow,int targetCol)
- {	if(startCol==targetCol && startRow==targetRow)return;
-	Cell c=getCell(targetRow,targetCol);
-	if(c==null || !c.free)return;
-
-	DirNode d=start;
-	if(d==null)d=new DirNode(startRow,startCol);
-	else{d.loc(startRow,startCol);d.n=d.p=null;}
-	d.dir=Direction.dir(startCol, startRow, targetCol, targetRow);
-	q=start=d;
-
-	d=target;
-	if(d==null)d=new DirNode(targetRow,targetCol);
-	else{d.loc(targetRow,targetCol);d.n=d.p=null;}
-	target=d;start.p=target.n=null;
-
-	findPath();if(grid!=null)
-	{	int z=grid.length*cols;
-		d=target;start.p=target.n=null;
-		while(d!=null && d!=start && --z>0)
-		{	DirNode m=d.p;
-			for(Direction dir:Direction.values())
-			{	DirNode nbr=grid(d.r+dir.dy,d.c+dir.dx);
-				if(nbr!=null&&nbr.pathLength<m.pathLength)
-					m=nbr;
-			}m.n=d;d.p=m;
-			m.dir=Direction.dir(m, d);
-			d=m;
-}}}
+ DirNode len(DirNode m,DirNode n2)
+ {	if(m==null)return m;
+	m.pathLength=n2==null?0:n2.pathLength+m.dist(n2);
+	m.estimated=m.pathLength+m.dist(target);return m;}
 
  DirNode grid(int y,int x)
  {return y>=0&& y<grid.length 
 	&&grid[y]!=null&&x>=0&& 
 	x<grid[y].length?grid[y][x]:null;}
- 
- void findPath()
- {	int x=target.c-start.c,y=target.r-start.r;
-	DirNode qTail=q=start;q.p=q.n=null;
-	if((Math.abs(x)==1 && y==0) || (Math.abs(y)==1 && x==0))
-		return;
 
-	//gridClear();
-	if(grid==null||grid.length!=state.a.length)
-		grid=new DirNode[state.a.length][];
+ void findPath(State p,int startRow,int startCol,int targetRow,int targetCol)
+ {s=state;findPath(startRow,startCol,targetRow,targetCol);}
+
+ void findPath(int startRow,int startCol,int targetRow,int targetCol)
+ {	DirNode d=start;start=null;
+	if(startCol==targetCol && startRow==targetRow)return;
+	Cell c=s.getCell(targetRow,targetCol);
+	if(c==null || !c.free)return;
+
+	if(d==null)d=new DirNode(startRow,startCol);
+	else d.init(startRow,startCol);
+	d.dir=Direction.dir(startCol, startRow, targetCol, targetRow);
+	q=start=d;
+
+	d=target;
+	if(d==null)d=new DirNode(targetRow,targetCol);
+	else d.init(targetRow,targetCol);
+	target=d;
+	start.pathLength=0;
+	start.estimated=target.estimated=start.dist(target);
+	if(start.estimated==1){start.link(target);return;}
+
+	//gridClear:
+	if(grid==null||grid.length!=s.a.length)
+		grid=new DirNode[s.a.length][];
 	for(int i=0;i<grid.length;i++)
-	{if(grid[i]==null||grid[i].length!=state.a[i].length)
-		grid[i]=new DirNode[state.a.length];
-	 for(int j=0;j<grid[i].length;j++)grid[i][j]=null;
+	{	if(grid[i]==null||grid[i].length!=s.a[i].length)
+			grid[i]=new DirNode[s.a[i].length];else 
+		for(int j=0;j<grid[i].length;j++)grid[i][j]=null;
 	}
 
-	grid[target.r][target.c]=target;
-	grid[start.r][start.c]=start;
+	if(target.r<0||target.r>=grid.length||grid[target.r]==null||target.c<0||target.c>=grid[target.r].length)
+		{p(" ArrayIndexOutOfBounds:target:"+target);return;}
+	else grid[target.r][target.c]=target;
 
-	//replace(Cell.D,Cell.d,Cell.X  ,Cell.G,Cell._  ,Cell.o,Cell.O);
+
+	if(start.r<0||start.r>=grid.length||grid[start.r]==null||start.c<0||start.c>=grid[start.r].length)
+		{p(" ArrayIndexOutOfBounds:start:"+start);return;}
+	else grid[start .r][start .c]=start;
+
+	findPath();
+	int z=grid.length*cols;
+	d=target;start.p=target.n=null;
+	while(d!=null && d!=start && --z>0)
+	{	DirNode m=grid(d.r+d.dir.dy,d.c+d.dir.dx);//d.p;
+		for(Direction dir:Direction.values())
+		{	DirNode nbr=grid(d.r+dir.dy,d.c+dir.dx);
+			if(nbr!=null&&(m==null||nbr.pathLength<m.pathLength))
+				m=nbr;
+		}m.n=d;d.p=m;
+		m.dir=Direction.dir(m, d);
+		d=m;
+	}grid=null;target.dir=null;
+ }
+ 
+ void findPath()
+ {	DirNode qTail=q=start,nbr,n2;
 	while(q!=null)
 	{DirNode m=q;q=q.dequeue();
 		for(Direction dir:Direction.values())
-		{	Cell c=getCell(
-				y=m.r+dir.dy,
-				x=m.c+dir.dx);
+		{	int x=m.c+dir.dx,y=m.r+dir.dy;
+			Cell c=s.getCell(y,x);
 			if(c!=null&&c.free)
-			{	if(x==target.c 
-				&& y==target.r)
-				{	m.dir=dir;
-					m.n=target;
-					target.p=m;
-					return;
-				}else if(grid(y,x)==null)
-				{	DirNode nbr=new DirNode(m,y,x);
-					nbr.pathLength
-						=Math.abs(start.r-nbr.r)
-						+Math.abs(start.c-nbr.c);
-					nbr.estimated=nbr.pathLength
-						+Math.abs(target.r-nbr.r)
-						+Math.abs(target.c-nbr.c);
-					if(q==null)q=qTail=nbr;else 
+			{	if((nbr=grid(y,x))==null)
+				{	nbr=grid[y][x]=new DirNode(y,x);n2=m;
+					n2=findNbr(nbr);if(n2==null)n2=m;//find the shortest step in terms of pathLength
+					nbr.dir=Direction.dir(nbr, n2);//the way back
+					len(nbr,n2);//nbr.pathLength=n2.pathLength+nbr.dist(n2);//nbr.dist(start);
+					//nbr.estimated=nbr.pathLength+nbr.dist(target);
+					if(q==null)q=qTail=nbr;else //enqueue the nbr
 					if(nbr.estimated<q.estimated)
-					{nbr.link(q);q=nbr;}else 
+						q=q.linkBefore(nbr);else 
 					if(nbr.estimated>=qTail.estimated)
 						qTail=qTail.link(nbr);
 					else
 						q.findE(nbr.estimated,qTail).link(nbr);
-					grid[y][x]=nbr;
+				}else if(nbr==target)
+				{	target.dir=dir.opposite();//m.link(target);
+					return;
 				}
 			}
+			//need first get nod(m.x,y,m.dir) , then, compare pathLength,which is, findNbr(m).link(m);m.pathLength=m.p.pathLength+m.dist(m.p);
 		}
 	}
  }//findPath
 
-/*void replace(Cell o,Cell v)
-{for(int r=0;r<a.length;r++)
- for(int c=0;r<a[r].length;c++)
- if(a[r][c]==o)a[r][c]=v;}*/
-
-void replace(
- Cell o1,Cell o12,Cell v1
- ,Cell o2,Cell v2  
- ,Cell o3,Cell v3)
-{for(int r=0;r<a.length;r++)
- for(int c=0;c<a[r].length;c++)
- {Cell v=getCell(r, c);
-	if(v==o1||v==o12)a[r][c]=v1;
-	else if(v==o2)a[r][c]=v2;
-	else if(v==o3)a[r][c]=v3;}}
+ /**find Neighbor that has the smallest pathLength, neighbors on the grid*/
+ DirNode findNbr(DirNode t)
+ {DirNode n=null,x=null;
+ 	for(Direction d:Direction.values())
+ 	{	x=grid(t.r+d.dy, t.c+d.dx);
+ 		if(n==null||(x!=null&&n.
+ 			pathLength>x.pathLength))
+ 			n=x;
+ 	}
+ 	//t.dir=n==null?null:Direction.dir(t, n);
+ 	return n;
+ }
 
 }//class PathFinder 
 
@@ -511,8 +730,8 @@ void find(State p,int row,int col,int cr,int cc)
 }//findBlockMoves
 
 boolean canReach(int pr,int pc,int tr,int tc)
-{if(pf==null)pf=new PathFinder(this);
-	pf.pLoc(pr,pc);//pf.gridClear();
+{if(pf==null)pf=new PathFinder();//this);
+	//pf.pLoc(pr,pc);//pf.gridClear();
 	pf.findPath(this, pr, pc, tr,tc);
 	return pf.start!=null;}
 
@@ -574,7 +793,7 @@ public void paint(Graphics g){
 	for(int row=0;row<rows;row++)try
 	{int y=row*h;
 		//g.drawLine(0,y, dim.width, y);
-		for(int col=0;col<cols;col++)try
+		for(int col=0;col<=cols;col++)try
 		{int x=col*w;
 			//g.drawLine(x, 0, x, dim.height);
 			Cell c=state.getCell(row, col);
@@ -596,20 +815,7 @@ public void paint(Graphics g){
 		c0=c1;r0=r1;
 	}
 	if(mousePath.size()>0)g.drawLine(c0*w+w2, r0*h+h2, mc*w+w2, mr*h+h2);
-	}*/int mpc=0;
-	try{DirNode dn=mousePathFinder==null?null:mousePathFinder.start;
-		int r0=ppr,c0=ppc,r1=r0,c1=c0;
-		while(dn!=null){mpc++;Direction d=dn.dir;
-		if(d==Direction.up)r1--;else
-		if(d==Direction.dn)r1++;else
-		if(d==Direction.rt)c1++;else
-		if(d==Direction.lf)c1--;
-		g.drawLine(c0*w+w2, r0*h+h2, c1*w+w2, r1*h+h2);
-		c0=c1;r0=r1;dn=dn.p;}
-	}catch(Exception ex){ex.printStackTrace();}
-
-	if(mousePathOffsetX!=0||mousePathOffsetY!=0)
-		g.drawOval(ppc*w+mousePathOffsetX, ppr*h+mousePathOffsetY, w/2, h/2);
+	}*/int mpc=pathAnim.paint(g);
 	g.drawString("done:"+state.countd+"/"
 	+(state.countG+state.countd)
 	+(state.countG==0?" , you Won":" ,remaining:"
@@ -624,120 +830,27 @@ public void mouseMoved(MouseEvent e)
 	w=dim.width/cols;h=dim.height/rows;
 	int r=e.getY()/h,c=e.getX()/w;
 	if(r!=mr||c!=mc)
-	{mr=r;mc=c;
-	
-	if(e.getClickCount()>0)
+	{	mr=r;mc=c;
+		//if(e.getClickCount()>0)
 		updateMousePath();
-	repaint();}}
+		repaint();}}
 
 
 void updateMousePath()
 {	if(mousePathFinder==null)
-		mousePathFinder=new PathFinder(state);
+		mousePathFinder=new PathFinder();//state);
 	mousePathFinder.findPath(state, ppr, ppc, mr, mc);}
 
 PathFinder mousePathFinder;
 BlockMoves blockMoves;
-/*
-void updateMousePath()
-{	State s=
-		((mousePathState!=null)
-			?mousePathState.copy(state)
-			:(mousePathState=state.copy()));
-	mousePath.clear();
-	replace(s  ,Cell.D,Cell.d,Cell.X  ,Cell.G,Cell._  ,Cell.o,Cell.O);
-	computeMP(s,ppr,ppc);//else base.computeMP();
- 
- //find short-cuts in un-optimized mousePath.
-// checkMousePathShortCuts();
-}
-
-State mousePathState;
-void replace(State s,Cell o,Cell v)
-{for(int r=0;r<s.a.length;r++)
- for(int c=0;r<s.a[r].length;c++)
- if(s.a[r][c]==o)s.a[r][c]=v;}
-
-void replace(State s,Cell o1,Cell o12,Cell v1,  Cell o2,Cell v2  ,Cell o3,Cell v3)
-{for(int r=0;r<s.a.length;r++)
- for(int c=0;c<s.a[r].length;c++)
- {Cell v=s.getCell(r, c);
-	if(v==o1||v==o12)s.a[r][c]=v1;
-	else if(v==o2)s.a[r][c]=v2;
-	else if(v==o3)s.a[r][c]=v3;}}
-
-boolean computeMP(State s,int ppr,int ppc)
-{	if(ppr==mr&&ppc==mc)return true;
-	int r1=ppr,c1=ppc,dy=mr-r1,dx=mc-c1;
-	boolean isVertical=Math.abs(dy)>Math.abs(dx)
-		,pstv=isVertical?dy>0:dx>0;
-	if(isVertical)r1+=pstv?1:-1;else c1+=pstv?1:-1;
-	s.a[ppr][ppc]=Cell.G;
-	Cell v1=s.getCell(r1, c1);//s.a[r1][c1];
-
-	//1st direction preference
-	if(v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{s.a[r1][c1]=Cell.O;
-		if(computeMP(s,r1,c1)){
-			Direction d=isVertical?(pstv?Direction.dn
-					:Direction.up):(pstv?Direction.rt
-					:Direction.lf);
-			mousePath.add(0, d);
-			return true;}
-		//s.a[r1][c1]=Cell.D;
-	}
-
-	//2nd direction preference, will use a perpendicular direction, and the same pstv-flag value
-	if(isVertical){r1=ppr;c1=ppc+(dx>0?1:-1);}else{c1=ppc;r1=ppr+(dy>0?1:-1);}
-	v1=s.getCell(r1, c1);
-	if(v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{s.a[r1][c1]=Cell.O;
-	 if(computeMP(s,r1,c1)){
-		Direction d=isVertical?//(pstv?Direction.dn:Direction.up):(pstv?Direction.rt:Direction.lf);
-				(dx>0?Direction.rt:Direction.lf):(dy>0?Direction.dn:Direction.up);
-		mousePath.add(0, d);
-		return true;}
-	 //s.a[r1][c1]=Cell.D;
-	}
-
-	//3rd direction preference
-	if(isVertical){r1=ppr;c1=ppc+(dx>0?-1:1);}else{c1=ppc;r1=ppr+(dy>0?-1:1);}
-	v1=s.getCell(r1, c1);
-	if(v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{s.a[r1][c1]=Cell.O;
-	 if(computeMP(s,r1,c1)){
-		Direction d=!isVertical?(dy<0?Direction.dn
-				:Direction.up):(dx<0?Direction.rt
-				:Direction.lf);
-		mousePath.add(0, d);
-		return true;}
-	 //s.a[r1][c1]=Cell.D;
-	}
-	
-	//4th direction preference
-	if(!isVertical){r1=ppr;c1=ppc+(pstv?-1:1);}else{c1=ppc;r1=ppr+(pstv?-1:1);}
-	v1=s.getCell(r1, c1);
-	if(v1!=null&&v1!=Cell.X&&v1!=Cell.D&&v1!=Cell.G)
-	{s.a[r1][c1]=Cell.O;
-	 if(computeMP(s,r1,c1)){
-		Direction d=isVertical?(!pstv?Direction.dn
-				:Direction.up):(!pstv?Direction.rt
-				:Direction.lf);
-		mousePath.add(0, d);
-		return true;}
-	 //s.a[r1][c1]=Cell.D;
-	}
-	s.a[ppr][ppc]=Cell.D;
-	return false;
-}*/
 
 
 public void mouseClicked(MouseEvent e) 
 {if(thread!=null){thread=null;mouseMoved(e);return;}
  if(blockMoves!=null&&blockMoves.canMove(mr, mc)){}
- updateMousePath();//if(mousePathFinder==null)mousePathFinder=new PathFinder(state);
+ updateMousePath();
  if(mousePathFinder.start!=null)
-	{startMousePath();
+	{pathAnim.startMousePath();
 	 repaint();}
  else{Cell v=state.getCell(mr,mc);
 	if(v==Cell.d||v==Cell.D)
@@ -804,41 +917,68 @@ public void actionPerformed(ActionEvent e)
 	else if("put with mouse-click:Player(keyboard:P)".equals(s)){}
 	else if("mouse-click move(keyboard:M)".equals(s)){}
 }
+PathAnim pathAnim=new PathAnim();
+class PathAnim implements Runnable{
 
-void startMousePath(){mousePathTrgtR=mr;mousePathTrgtC=mc;startThread();}
-void startBlockMove(){}
-
-int mousePathOffsetX=0,mousePathOffsetY=0
-,mousePathTrgtR=-1,mousePathTrgtC=-1
+void startMousePath(){q=mousePathFinder.start;startThread();}//mousePathTrgt[0]=mr;mousePathTrgt[1]=mc;
+//void startBlockMove(){}
+DirNode q;
+int mousePathOffset[]={0,0}//x,y
+//,mousePathTrgt[]={-1,-1}//r,c
 ,mousePathOffsetSpeed=5;
+int paint(Graphics g)
+{	int mpc=0;
+	try{DirNode dn=q;//mousePathFinder==null?null:mousePathFinder.start;
+		int r0=ppr,c0=ppc,r1=r0,c1=c0;
+		while(dn!=null){mpc++;Direction d=dn.dir;
+		if(d.vert)r1+=d.dy;else c1+=d.dx;
+		g.drawLine(c0*w+w2, r0*h+h2, c1*w+w2, r1*h+h2);
+		c0=c1;r0=r1;dn=dn.n;}
+	}catch(Exception ex){ex.printStackTrace();}
 
-boolean runMousePath()
+	if(mousePathOffset[0]!=0||mousePathOffset[1]!=0)
+		g.drawOval(ppc*w+mousePathOffset[0], ppr*h+mousePathOffset[1], w/2, h/2);
+	return mpc;
+}
+
+/*boolean runMousePath()
 {if(mousePathFinder.start==null)
- {mousePathTrgtR=mousePathTrgtC=-1;return false;}
+ {return false;}//mousePathTrgt[0]=mousePathTrgt[1]=-1;
  switch(mousePathFinder.start.dir)
-	{case up:mousePathOffsetY-=mousePathOffsetSpeed;
-		if(mousePathOffsetY<=-h)
+	{case up:mousePathOffset[1]-=mousePathOffsetSpeed;
+		if(mousePathOffset[1]<=-h)
 		{mousePathFinder.start=mousePathFinder.start.p;
 		 state.mov(ppr,ppc,Direction.up,true);
-		 mousePathOffsetY=mousePathOffsetX=0;}break;
-	case dn:mousePathOffsetY+=mousePathOffsetSpeed;
-	if(mousePathOffsetY>=h)
+		 mousePathOffset[1]=mousePathOffset[0]=0;}break;
+	case dn:mousePathOffset[1]+=mousePathOffsetSpeed;
+	if(mousePathOffset[1]>=h)
 	{mousePathFinder.start=mousePathFinder.start.p;
 	 state.mov(ppr,ppc,Direction.dn,true);
-	 mousePathOffsetY=mousePathOffsetX=0;}break;
-	case rt:mousePathOffsetX+=mousePathOffsetSpeed;
-	if(mousePathOffsetX>=w)
+	 mousePathOffset[1]=mousePathOffset[0]=0;}break;
+	case rt:mousePathOffset[0]+=mousePathOffsetSpeed;
+	if(mousePathOffset[0]>=w)
 	{mousePathFinder.start=mousePathFinder.start.p;
 	 state.mov(ppr,ppc,Direction.rt,true);
-	 mousePathOffsetY=mousePathOffsetX=0;}break;
-	case lf:mousePathOffsetX-=mousePathOffsetSpeed;
-	if(mousePathOffsetX<=-w)
+	 mousePathOffset[1]=mousePathOffset[0]=0;}break;
+	case lf:mousePathOffset[0]-=mousePathOffsetSpeed;
+	if(mousePathOffset[0]<=-w)
 	{mousePathFinder.start=mousePathFinder.start.p;
 	 state.mov(ppr,ppc,Direction.lf,true);
-	 mousePathOffsetY=mousePathOffsetX=0;}break;
-	}return true;}
+	 mousePathOffset[1]=mousePathOffset[0]=0;}break;
+	}return true;}*/
 
-boolean runBlockMove(){return false;}
+ boolean runMousePath()
+ {	if(q==null)return false;
+	Direction dir=q.dir;
+	int d=dir.vert?h:w,i=dir.vert?1:0,f=dir.vert?dir.dy:dir.dx;
+	mousePathOffset[i]+=f*mousePathOffsetSpeed;
+	if((!dir.postv&&mousePathOffset[i]<=-d)||(dir.postv&&mousePathOffset[i]>=d))
+	{	state.mov(ppr,ppc,dir,true);q=q.n;
+		mousePathOffset[1]=mousePathOffset[0]=0;
+	}return true;
+ }
+
+//boolean runBlockMove(){return false;}
 
 void startThread()
 {p("startThread");
@@ -852,29 +992,14 @@ public void run()
 	p("run:begin");
 	while(thrd==thread)try{
 		boolean b=runMousePath();
-		b|=runBlockMove();
+		//b|=runBlockMove();
 		Thread.sleep(5);
 		if(!b)
-			thread=null;
+		{thread=null;mousePathFinder=null;}
 		repaint();
 	}catch(Exception ex){ex.printStackTrace();}
 	//thread=null;
 	p("run:exit");}
+}//class PathAnim
 
 }//class SokobanSolver
-
-/*
-
-XXXXXXXXXXXXXXXXXXXXXX
-XOX  X               X
-X D  D D      G G    X
-X D  D D      G G    X
-X    D D      G G    X
-XXDDDD D  DGGGG G    X
-X      D        GG   X
-X  DDDDD   GGGGGGG   X
-X                    X
-X                    X
-XXXXXXXXXXXXXXXXXXXXXX
-
-*/
