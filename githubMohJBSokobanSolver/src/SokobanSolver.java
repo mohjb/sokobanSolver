@@ -91,6 +91,7 @@ void loadLevels()
  {	x.printStackTrace();
 	String[]ll={
 "XXXX\nX  X\nXODGX\nXXXXX"
+
 ,
 "XXXXXXXXXXXXXXXXXXXXXXX\n"+
 "XOX  X               XX\n"+
@@ -112,20 +113,239 @@ void loadLevels()
 "X              XXXXXX             X   XX\n"+
 "X                                 X   XX\n"+
 "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+,
+
+
+
+"XXXXX\n"+
+"X   X\n"+
+"X D X\n"+
+"X OGX\n"+
+"XXXXX"
+,
+"    XXXXX          \n"+
+"    X   X          \n"+
+"    XD  X          \n"+
+"  XXX  DXX         \n"+
+"  X  D D X         \n"+
+"XXX X XX X   XXXXXX\n"+
+"X   X XX XXXXX  GGX\n"+
+"X D  D          GGX\n"+
+"XXXXX XXX XPXX  GGX\n"+
+"    X     XXXXXXXXX\n"+
+"    XXXXXXX        "
+,
+"XXXXXXXXXXXX  \n"+
+"XGG  X     XXX\n"+
+"XGG  X D  D  X\n"+
+"XGG  XDXXXX  X\n"+
+"XGG    O XX  X\n"+
+"XGG  X X  D XX\n"+
+"XXXXXX XXD D X\n"+
+"  X D  D D D X\n"+
+"  X    X     X\n"+
+"  XXXXXXXXXXXX"
+,
+"    XXXXX\n"+
+"    X   X\n"+
+"    XD  X\n"+
+"  XXX  DXX\n"+
+"  X  D D X\n"+
+"XXX X XX X   XXXXXX\n"+
+"X   X XX XXXXX  GGX\n"+
+"X D  D          GGX\n"+
+"XXXXX XXX XOXX  GGX\n"+
+"    X     XXXXXXXXX\n"+
+"    XXXXXXX        "
+,
+"XXXXX   \n"+
+"X   XXXX\n"+
+"X D X  X\n"+
+"X   D OX\n"+
+"XXXX  GX\n"+
+"XX D XGX\n"+
+"XX X XGX\n"+
+"XX   XXX\n"+
+"XXXXXXXX"
+,
+
+"XXXXXXXX\n"+
+"XXXX_OXX\n"+
+"XXXX___X\n"+
+"XG_XDD_X\n"+
+"X_____XX\n"+
+"XG__DXXX\n"+
+"XXG__XXX\n"+
+"XXXXXXXX"
+,
+"  XXXXX \n"+
+"XXX   X \n"+
+"XGOD  X \n"+
+"XXX DGX \n"+
+"XGXXD X \n"+
+"X X G XX\n"+
+"XD dDDGX\n"+
+"X   G  X\n"+
+"XXXXXXXX"
+,
+"XXXXXXX\n"+
+"X GGD X\n"+
+"X X D X\n"+
+"X X X X\n"+
+"X DOX X\n"+
+"XGD   X\n"+
+"XGXXXXX\n"+
+"XXX"
+,
+"  XXXX\n"+
+"XXX  XXXX\n"+
+"X     D X\n"+
+"X X  XD X\n"+
+"X G GXO X\n"+
+"XXXXXXXXX"
+,
+
+
+"   XXXXX    \n"+
+"XXXX   X    \n"+
+"XGGXDD X    \n"+
+"X GGD  XXXXX\n"+
+"X OX X X   X\n"+
+"X  D     D X\n"+
+"X  XXXXXXXGX\n"+
+"XXXX     XXX"
+
+,
+"   XXX\n"+
+"  XX X XXXXX\n"+
+" XX  XXX  XX\n"+
+"XX D      XX\n"+
+"X   OD X  XX\n"+
+"XXX DXXX  XX\n"+
+"  X  XGG  XX\n"+
+" XX XXGX XXX\n"+
+" X      XX\n"+
+" X     XX\n"+
+" XXXXXXX"
+,
+"   XXXXXXXXX\n"+
+"   X      XX\n"+
+"XXXX XXXX XX\n"+
+"X D D GGX XX\n"+
+"X X  GX X XX\n"+
+"X X XXX X XX\n"+
+"X XGX D   XX\n"+
+"X XGDOD  XXX\n"+
+"X XDXXX  X\n"+
+"X  G     X\n"+
+"XXXXXXXXXX"
+,
+"_______XXXXX\n"+
+"_XXXXXXX___XXX\n"+
+"XX_X_OXX_DD_XX\n"+
+"X____D______XX\n"+
+"X__D__XXX___XX\n"+
+"XXX_XXXXXDXXXX\n"+
+"X_D__XXX__GX\n"+
+"X_D_D_D__GGX\n"+
+"X____XXXGGGX\n"+
+"X____X_XGGGX\n"+
+"XXXXXX_XXXXX"
+,
+"XXXXXXXX\n"+
+"X__X___X\n"+
+"X___D__X\n"+
+"X_DXX_XXXXXX\n"+
+"XX_XG_XX__XX\n"+
+"_X_XG___D_XX\n"+
+"_X_XG_XX__XX\n"+
+"_X_XGXXX_XXX\n"+
+"_XO___XX__XX\n"+
+"_XX_D_____XX\n"+
+"__XXXXXX__XX\n"+
+"_______XXXXX"
+
+,
+"_______XXXXXXXXX\n"+
+"_XXXXXXX__X___XX\n"+
+"_X_______DDGGGXX\n"+
+"_X_XXXXXXDXGGGXX\n"+
+"XX_X______XGGGXX\n"+
+"X__X_XD_D_XXXXXX\n"+
+"X_X_D_D_D_X____\n"+
+"X_O__D_X__X____\n"+
+"XXXXXD_DD_X____\n"+
+"____X_____X____\n"+
+"____XXXXXXX____"
+
+,
+"     XXXX\n"+
+"     X  X\n"+
+"     X  X\n"+
+"     X  X\n"+
+"     XD X\n"+
+"     X  X\n"+
+"     XD XX\n"+
+"XXXXXX D XXX\n"+
+"X G G   o XX\n"+
+"XXXXXXXXXXXX"
+,
+"             XXXX\n"+
+"             X XX\n"+
+"XXXXXXXXXXXXXXoXX\n"+
+"X            D XX\n"+
+"X   D D D D D  XX\n"+
+"XXXXXXXXXXXXX GXX\n"+
+"            XG XX\n"+
+"            X GXX\n"+
+"            XG XX\n"+
+"            X GXX\n"+
+"            XX XX\n"+
+"             XXXX"
+,
+"XXX\n"+
+"X X\n"+
+"XoXXXXXXXXXXXXXXX\n"+
+"X D            XX\n"+
+"X  D D D D D   XX\n"+
+"XG XXXXXXXXXXXXXX\n"+
+"X GX\n"+
+"XG X\n"+
+"X GX\n"+
+"XG X\n"+
+"X XX\n"+
+"XXX"
+
+,
+
+"             XXXX\n"+
+"             X XX\n"+
+"XXXXXXXXXXXXXXoXX\n"+
+"X            D XX\n"+
+"X   D D D D D  XX\n"+
+"XXXXXXXXXXXXX GXX\n"+
+"            XG XX\n"+
+"            X GXX\n"+
+"            XG XX\n"+
+"            X GXX\n"+
+"            XX XX\n"+
+"             XXXX"
+
 ,
 
 "X\n"+
-"XGX\n"+
-"X O X\n"+
-"X     X\n"+
-"X  D    X\n"+
+"XGXXX\n"+
+"X O XXX\n"+
+"X     XXX\n"+
+"X  D    XXX\n"+
 "XG   D D  X\n"+
 "X    D   GX\n"+
-"X  D D  X\n"+
-"XG   GX\n"+
-"X   X\n"+
-"XGX\n"+
-" X"
+"X  D D  XXX\n"+
+"XG   GXXX\n"+
+"X   XXX\n"+
+"XGXXX\n"+
+"XXX"
 ,
 "XXXXX\n"+
 "X O XXX\n"+
@@ -133,7 +353,7 @@ void loadLevels()
 "X dG G X\n"+
 "X  DD XX\n"+
 "XXX XGX\n"+
-"X   X\n"+
+"X   XX\n"+
 "XXXXX"
 ,
 "XXXXX\n"+
@@ -155,23 +375,9 @@ void loadLevels()
 "XXXXDXXXXXXXDXXX\n"+
 "X       O      X\n"+
 "XXXXXXXXXXXXXXXX"
+
 ,
-"XXXX        \n"+
-"XXX  XXXX   \n"+
-"XXXX D  X  X\n"+
-"X D  D D   X\n"+
-"X X XDXDX  X\n"+
-"X GGGGOGG XX\n"+
-"XXXXXXXXXXX"
-,
-"XXXXXXX\n"+
-"XGGG  X\n"+
-"X X D X\n"+
-"X  D  X\n"+
-"XXXD XX\n"+
-"X OX\n"+
-"XXXX"
-,
+
 "XXXXX\n"+
 "XXX  OX\n"+
 "X  D  X\n"+
